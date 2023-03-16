@@ -24,4 +24,6 @@ func main() {
 
 	doGreet(c)
 
+	doGreetStream(c)
+
 }

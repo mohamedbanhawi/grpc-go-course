@@ -24,3 +24,4 @@ make <project>
 Examples of HTTP/2 API for a Golang microservices with gRPC, Protocol Buffers (protobuf)
 
 * [Hello Word Example](/greet/)
+* [Sum API](/calculator/)

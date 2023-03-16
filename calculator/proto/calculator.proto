@@ -4,16 +4,16 @@ package calculator;
 
 option go_package = "github.com/mohamedbanhawi/grpc-go-course/calculator/proto";
 
-message CalculateRequest {
+message SumRequest {
     float first_number = 1;
     float second_number = 2;
 
 }
 
-message CalculateResponse {
+message SumResponse {
     float result = 1;
 }
 
 service CalculateService {
-    rpc Calculate (CalculateRequest) returns (CalculateResponse);
+    rpc Sum (SumRequest) returns (SumResponse);
 }

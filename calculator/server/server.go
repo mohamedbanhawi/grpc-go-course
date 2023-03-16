@@ -17,11 +17,12 @@ type Server struct {
 	pb.CalculateServiceServer
 }
 
-func (s *Server) Calculate(ctx context.Context, request *pb.CalculateRequest) (*pb.CalculateResponse, error) {
+// Implement Sum Method
+func (s *Server) Sum(ctx context.Context, request *pb.SumRequest) (*pb.SumResponse, error) {
 
-	log.Printf("Invoked calculate on server")
+	log.Printf("Recieved sum on server")
 
-	return &pb.CalculateResponse{
+	return &pb.SumResponse{
 		Result: request.GetFirstNumber() + request.GetSecondNumber(),
 	}, nil
 }

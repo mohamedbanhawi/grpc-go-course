@@ -12,9 +12,9 @@ import (
 
 var addr string = "localhost:50051"
 
-func doCalculate(cc pb.CalculateServiceClient) {
+func doSum(cc pb.CalculateServiceClient) {
 
-	response, err := cc.Calculate(context.Background(), &pb.CalculateRequest{
+	response, err := cc.Sum(context.Background(), &pb.SumRequest{
 		FirstNumber: 10, SecondNumber: 2,
 	})
 
@@ -22,7 +22,7 @@ func doCalculate(cc pb.CalculateServiceClient) {
 		log.Fatalf("Failed to send request %v\n", err)
 	}
 
-	log.Printf("Invoked Calculate Request")
+	log.Printf("Invoked Sum Request")
 
 	log.Printf("Result: %2.2f\n", response.Result)
 }
@@ -40,6 +40,6 @@ func main() {
 
 	client := pb.NewCalculateServiceClient(conn)
 
-	doCalculate(client)
+	doSum(client)
 
 }

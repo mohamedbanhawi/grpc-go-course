@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	pb "github.com/mohamedbanhawi/grpc-go-course/greet/proto"
@@ -25,4 +26,22 @@ func (s *Server) GreetStream(in *pb.GreetRequest, stream pb.GreetService_GreetSt
 	}
 
 	return nil
+}
+
+func (s *Server) GreetLongStream(stream pb.GreetService_GreetLongStreamServer) error {
+	log.Printf("GreetStream function invoked\n")
+
+	var result string = ""
+
+	for {
+		request, err := stream.Recv()
+		if err == io.EOF {
+			stream.SendAndClose(&pb.GreetResponse{Result: result})
+			return nil
+		} else if err != nil {
+			log.Fatalf("Failed to recieve stream%v\n", err)
+		}
+		log.Printf("GreetStream function stream recieved%v\n", request)
+		result += fmt.Sprintf("Hello %s\n!", request.FirstName)
+	}
 }

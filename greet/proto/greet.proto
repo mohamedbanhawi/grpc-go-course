@@ -15,6 +15,7 @@ message GreetResponse {
 service GreetService {
     rpc Greet (GreetRequest) returns (GreetResponse);
     rpc GreetStream (GreetRequest) returns (stream GreetResponse);
+    rpc GreetLongStream(stream GreetRequest) returns (GreetResponse);
 
 }
 

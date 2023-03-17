@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,8 +23,12 @@ func main() {
 
 	c := pb.NewGreetServiceClient(conn)
 
-	doGreet(c)
+	wg := sync.WaitGroup{}
 
-	doGreetStream(c)
+	wg.Add(3)
+	go doGreet(c, &wg)
+	go doGreetStream(c, &wg)
+	go doGreetLongStream(c, &wg)
+	wg.Wait()
 
 }

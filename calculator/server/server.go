@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 
@@ -17,10 +18,11 @@ type Server struct {
 	pb.CalculateServiceServer
 }
 
-// Implement Sum Method
+// Implement CalculateServiceServer Interface Concrete Methods
+
 func (s *Server) Sum(ctx context.Context, request *pb.SumRequest) (*pb.SumResponse, error) {
 
-	log.Printf("Recieved sum on server")
+	log.Printf("Invoked sum on server\n")
 
 	return &pb.SumResponse{
 		Result: request.GetFirstNumber() + request.GetSecondNumber(),
@@ -28,7 +30,7 @@ func (s *Server) Sum(ctx context.Context, request *pb.SumRequest) (*pb.SumRespon
 }
 
 func (s *Server) Primes(in *pb.PrimesRequest, stream pb.CalculateService_PrimesServer) error {
-	log.Printf("Recieved Primes on server")
+	log.Printf("Invoked Primes on server\n")
 
 	var number int32 = in.GetNumber()
 
@@ -47,6 +49,35 @@ func (s *Server) Primes(in *pb.PrimesRequest, stream pb.CalculateService_PrimesS
 		}
 	}
 	return nil
+}
+
+func (s *Server) Average(stream pb.CalculateService_AverageServer) error {
+
+	log.Printf("Invoked Average on server\n")
+	var numbers []float32
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			var total float32 = 0
+			for _, value := range numbers {
+				total += value
+			}
+			if len(numbers) <= 0 {
+				stream.SendAndClose(&pb.AverageResponse{})
+			}
+			stream.SendAndClose(&pb.AverageResponse{Result: total / float32(len(numbers))})
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Failed to recieve number request %v", err)
+			return err
+		}
+		log.Printf("Recieved number %v to Average on server\n", req)
+		numbers = append(numbers, req.Number)
+	}
+
 }
 
 func main() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -49,6 +50,36 @@ func doPrimes(cc pb.CalculateServiceClient) {
 	}
 }
 
+func doAverage(cc pb.CalculateServiceClient) {
+	stream, err := cc.Average(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to initaite Average request %v\n", err)
+	}
+
+	requests := []*pb.AverageRequest{
+		{Number: 12.0},
+		{Number: 2.0},
+		{Number: 42.0},
+	}
+
+	for _, request := range requests {
+		err := stream.Send(request)
+		time.Sleep(time.Second)
+		if err != nil {
+			log.Fatalf("Failed to send Average request %v\n", err)
+		}
+	}
+
+	response, err := stream.CloseAndRecv()
+
+	if err != nil {
+		log.Fatalf("Failed to recieve Average response %v\n", err)
+	}
+
+	log.Printf("Average: %2.2f\n", response.Result)
+}
+
 func main() {
 
 	// connect to GRPC server
@@ -64,5 +95,6 @@ func main() {
 
 	doSum(client)
 	doPrimes(client)
+	doAverage(client)
 
 }

@@ -27,6 +27,28 @@ func (s *Server) Sum(ctx context.Context, request *pb.SumRequest) (*pb.SumRespon
 	}, nil
 }
 
+func (s *Server) Primes(in *pb.PrimesRequest, stream pb.CalculateService_PrimesServer) error {
+	log.Printf("Recieved Primes on server")
+
+	var number int32 = in.GetNumber()
+
+	var factor int32 = 2
+	for number > 1 {
+		if number%factor == 0 {
+			// if factor evenly divides into N
+			err := stream.SendMsg(&pb.PrimesResponse{Result: factor}) // this is a factor
+			if err != nil {
+				log.Printf("Failed to send %d as a factor for %d\n%v", factor, number, err)
+				return err
+			}
+			number /= factor // divide N by factor so that we have the rest of the number left.
+		} else {
+			factor++
+		}
+	}
+	return nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", addr)
 

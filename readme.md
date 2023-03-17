@@ -23,5 +23,6 @@ make <project>
 
 Examples of HTTP/2 API for a Golang microservices with gRPC, Protocol Buffers (protobuf)
 
+Implements Unary, Server streaming, Client Streaming and Bidirectional Streaming of the following
 * [Hello Word Example](/greet/)
-* [Sum API](/calculator/)
+* [Calculator API](/calculator/)

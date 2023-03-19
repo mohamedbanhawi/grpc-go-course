@@ -25,6 +25,7 @@ type CalculateServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
 	Primes(ctx context.Context, in *PrimesRequest, opts ...grpc.CallOption) (CalculateService_PrimesClient, error)
 	Average(ctx context.Context, opts ...grpc.CallOption) (CalculateService_AverageClient, error)
+	Max(ctx context.Context, opts ...grpc.CallOption) (CalculateService_MaxClient, error)
 }
 
 type calculateServiceClient struct {
@@ -110,6 +111,37 @@ func (x *calculateServiceAverageClient) CloseAndRecv() (*AverageResponse, error)
 	return m, nil
 }
 
+func (c *calculateServiceClient) Max(ctx context.Context, opts ...grpc.CallOption) (CalculateService_MaxClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CalculateService_ServiceDesc.Streams[2], "/calculator.CalculateService/Max", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &calculateServiceMaxClient{stream}
+	return x, nil
+}
+
+type CalculateService_MaxClient interface {
+	Send(*MaxRequest) error
+	Recv() (*MaxResponse, error)
+	grpc.ClientStream
+}
+
+type calculateServiceMaxClient struct {
+	grpc.ClientStream
+}
+
+func (x *calculateServiceMaxClient) Send(m *MaxRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *calculateServiceMaxClient) Recv() (*MaxResponse, error) {
+	m := new(MaxResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalculateServiceServer is the server API for CalculateService service.
 // All implementations must embed UnimplementedCalculateServiceServer
 // for forward compatibility
@@ -117,6 +149,7 @@ type CalculateServiceServer interface {
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
 	Primes(*PrimesRequest, CalculateService_PrimesServer) error
 	Average(CalculateService_AverageServer) error
+	Max(CalculateService_MaxServer) error
 	mustEmbedUnimplementedCalculateServiceServer()
 }
 
@@ -132,6 +165,9 @@ func (UnimplementedCalculateServiceServer) Primes(*PrimesRequest, CalculateServi
 }
 func (UnimplementedCalculateServiceServer) Average(CalculateService_AverageServer) error {
 	return status.Errorf(codes.Unimplemented, "method Average not implemented")
+}
+func (UnimplementedCalculateServiceServer) Max(CalculateService_MaxServer) error {
+	return status.Errorf(codes.Unimplemented, "method Max not implemented")
 }
 func (UnimplementedCalculateServiceServer) mustEmbedUnimplementedCalculateServiceServer() {}
 
@@ -211,6 +247,32 @@ func (x *calculateServiceAverageServer) Recv() (*AverageRequest, error) {
 	return m, nil
 }
 
+func _CalculateService_Max_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CalculateServiceServer).Max(&calculateServiceMaxServer{stream})
+}
+
+type CalculateService_MaxServer interface {
+	Send(*MaxResponse) error
+	Recv() (*MaxRequest, error)
+	grpc.ServerStream
+}
+
+type calculateServiceMaxServer struct {
+	grpc.ServerStream
+}
+
+func (x *calculateServiceMaxServer) Send(m *MaxResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *calculateServiceMaxServer) Recv() (*MaxRequest, error) {
+	m := new(MaxRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalculateService_ServiceDesc is the grpc.ServiceDesc for CalculateService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -232,6 +294,12 @@ var CalculateService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Average",
 			Handler:       _CalculateService_Average_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Max",
+			Handler:       _CalculateService_Max_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
+	"sync"
 	"time"
 
 	"google.golang.org/grpc"
@@ -80,6 +82,52 @@ func doAverage(cc pb.CalculateServiceClient) {
 	log.Printf("Average: %2.2f\n", response.Result)
 }
 
+func doMax(cc pb.CalculateServiceClient) {
+
+	stream, err := cc.Max(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to initaite Average request %v\n", err)
+	}
+
+	requests := []*pb.MaxRequest{
+		{Number: 1},
+		{Number: 5},
+		{Number: 3},
+		{Number: 6},
+		{Number: 2},
+		{Number: 20},
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer stream.CloseSend()
+		defer wg.Done()
+		for _, request := range requests {
+			stream.Send(request)
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				fmt.Printf("Failed to recieve response from server%v\n", err)
+			}
+			fmt.Printf("Max Result %2.2f\n", res.Result)
+		}
+	}()
+
+	wg.Wait()
+
+}
+
 func main() {
 
 	// connect to GRPC server
@@ -96,5 +144,6 @@ func main() {
 	doSum(client)
 	doPrimes(client)
 	doAverage(client)
+	doMax(client)
 
 }

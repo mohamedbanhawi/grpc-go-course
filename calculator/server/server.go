@@ -80,6 +80,38 @@ func (s *Server) Average(stream pb.CalculateService_AverageServer) error {
 
 }
 
+func (s *Server) Max(stream pb.CalculateService_MaxServer) error {
+
+	log.Printf("Invoked Max on server\n")
+	var numbers []float32
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Failed to recieve max number request %v", err)
+			return err
+		}
+		log.Printf("Recieved number %v to max on server\n", req)
+		numbers = append(numbers, req.Number)
+
+		// maximum number closure
+		max := func() float32 {
+			var max float32
+			for i, e := range numbers {
+				if i == 0 || e > max {
+					max = e
+				}
+			}
+			return max
+		}()
+		stream.Send(&pb.MaxResponse{Result: max})
+	}
+}
+
 func main() {
 	lis, err := net.Listen("tcp", addr)
 

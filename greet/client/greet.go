@@ -82,3 +82,50 @@ func doGreetLongStream(c pb.GreetServiceClient, wg *sync.WaitGroup) {
 	log.Printf("Recieved: %s\n", response.Result)
 
 }
+
+func doGreetAll(c pb.GreetServiceClient) {
+	log.Println("doGreetAll was invoked")
+	stream, err := c.GreetAll(context.Background())
+
+	if err != nil {
+		log.Fatalf("Could not create greet long steam %v\n", err)
+
+	}
+
+	requests := []*pb.GreetRequest{
+		{FirstName: "Bibo"},
+		{FirstName: "Miso"},
+		{FirstName: "Yoyo"},
+		{FirstName: "Toti"},
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for _, request := range requests {
+			stream.Send(request)
+			log.Printf("Sending %v\n", request)
+			time.Sleep(time.Second)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		defer wg.Done()
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+
+			} else if err != nil {
+				log.Fatalf("Could not greet steam %v\n", err)
+			}
+
+			log.Printf("Greeting: %s\n", res.Result)
+		}
+	}()
+
+	wg.Wait()
+
+}

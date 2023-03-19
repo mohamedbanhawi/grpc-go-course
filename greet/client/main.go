@@ -31,4 +31,6 @@ func main() {
 	go doGreetLongStream(c, &wg)
 	wg.Wait()
 
+	doGreetAll(c)
+
 }

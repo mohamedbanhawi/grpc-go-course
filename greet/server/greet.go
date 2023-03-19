@@ -45,3 +45,19 @@ func (s *Server) GreetLongStream(stream pb.GreetService_GreetLongStreamServer) e
 		result += fmt.Sprintf("Hello %s\n!", request.FirstName)
 	}
 }
+
+func (s *Server) GreetAll(stream pb.GreetService_GreetAllServer) error {
+	log.Printf("GreetAll function invoked\n")
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			log.Fatalf("Failed to recieve stream%v\n", err)
+		}
+		log.Printf("GreetAll function stream recieved%v\n", req)
+		stream.Send(&pb.GreetResponse{Result: req.FirstName})
+	}
+
+}

@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	pb "github.com/mohamedbanhawi/grpc-go-course/greet/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
@@ -42,7 +45,7 @@ func (s *Server) GreetLongStream(stream pb.GreetService_GreetLongStreamServer) e
 			log.Fatalf("Failed to recieve stream%v\n", err)
 		}
 		log.Printf("GreetStream function stream recieved%v\n", request)
-		result += fmt.Sprintf("Hello %s\n!", request.FirstName)
+		result += fmt.Sprintf("Hello, %s!\n", request.FirstName)
 	}
 }
 
@@ -60,4 +63,19 @@ func (s *Server) GreetAll(stream pb.GreetService_GreetAllServer) error {
 		stream.Send(&pb.GreetResponse{Result: req.FirstName})
 	}
 
+}
+
+func (s *Server) GreetTimed(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
+	log.Println("GreetTimed Invoked on Server")
+
+	response := &pb.GreetResponse{Result: fmt.Sprintf("Hello, %s !\n", in.FirstName)}
+
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Println("Client cancelled the request")
+			return nil, status.Error(codes.Canceled, "Client cancelled the request")
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return response, nil
 }

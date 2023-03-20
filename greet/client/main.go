@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -32,5 +33,7 @@ func main() {
 	wg.Wait()
 
 	doGreetAll(c)
+	doGreetTimed(c, 5*time.Second)
+	doGreetTimed(c, 1*time.Second)
 
 }

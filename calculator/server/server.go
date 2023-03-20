@@ -4,10 +4,13 @@ import (
 	"context"
 	"io"
 	"log"
+	"math"
 	"net"
 
 	pb "github.com/mohamedbanhawi/grpc-go-course/calculator/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var addr string = "0.0.0.0:50051"
@@ -110,6 +113,19 @@ func (s *Server) Max(stream pb.CalculateService_MaxServer) error {
 		}()
 		stream.Send(&pb.MaxResponse{Result: max})
 	}
+}
+
+func (s *Server) Sqrt(ctx context.Context, in *pb.SqrtRequest) (*pb.SqrtResponse, error) {
+	log.Println("Invoked Sqrt on server")
+
+	number := in.Number
+
+	if number < 0 {
+		return nil, status.Errorf(codes.InvalidArgument,
+			"Invalid Argurment %d is less than 0", number)
+	}
+
+	return &pb.SqrtResponse{Result: math.Sqrt(float64(number))}, nil
 }
 
 func main() {

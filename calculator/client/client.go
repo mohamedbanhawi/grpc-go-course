@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/mohamedbanhawi/grpc-go-course/calculator/proto"
 )
@@ -128,6 +130,31 @@ func doMax(cc pb.CalculateServiceClient) {
 
 }
 
+func doSqrt(cc pb.CalculateServiceClient, number int32) {
+	log.Println("New Sqrt calculation invoked")
+
+	res, err := cc.Sqrt(context.Background(), &pb.SqrtRequest{Number: number})
+
+	if err != nil {
+		e, ok := status.FromError(err)
+
+		if ok {
+			// grpc error
+			if e.Code() == codes.InvalidArgument {
+				log.Printf("Send an invalid negative number\n")
+			} else {
+				log.Printf("gRPC error %v:%s", e.Code(), e.Message())
+			}
+			return
+		}
+		log.Fatalf("Failed to send Sqrt Request\n")
+		return
+	}
+
+	log.Printf("Sqrt of (%d) = (%2.2f)\n", number, res.Result)
+
+}
+
 func main() {
 
 	// connect to GRPC server
@@ -145,5 +172,7 @@ func main() {
 	doPrimes(client)
 	doAverage(client)
 	doMax(client)
+	doSqrt(client, 25)
+	doSqrt(client, -25)
 
 }

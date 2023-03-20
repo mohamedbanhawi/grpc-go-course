@@ -10,7 +10,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/mohamedbanhawi/grpc-go-course/calculator/proto"
@@ -157,8 +157,18 @@ func doSqrt(cc pb.CalculateServiceClient, number int32) {
 
 func main() {
 
+	// TLS Boilerplate grpc dial options
+	opts := []grpc.DialOption{}
+	certFile := "ssl/ca.crt"
+	creds, err := credentials.NewClientTLSFromFile(certFile, "")
+
+	if err != nil {
+		log.Fatalf("Failed to connect %v\n", err)
+	}
+
+	opts = append(opts, grpc.WithTransportCredentials(creds))
 	// connect to GRPC server
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(addr, opts...)
 
 	if err != nil {
 		log.Fatalf("Failed to connect %v\n", err)

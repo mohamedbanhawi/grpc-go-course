@@ -1,1 +1,7 @@
+# build articats
 bin/*
+## ssl 
+*.crt
+*.key
+*.csr
+*.pem

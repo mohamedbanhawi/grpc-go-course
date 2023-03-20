@@ -10,6 +10,7 @@ import (
 	pb "github.com/mohamedbanhawi/grpc-go-course/calculator/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -137,8 +138,18 @@ func main() {
 
 	log.Printf("Listening on %s\n", addr)
 
-	// grpc Server
-	s := grpc.NewServer()
+	// TLS Boilerplate grpc server options
+	opts := []grpc.ServerOption{}
+	certFile := "ssl/server.crt"
+	keyFile := "ssl/server.pem"
+	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
+
+	if err != nil {
+		log.Fatalf("Error when loading Cert/Key %v\n", err)
+	}
+	opts = append(opts, grpc.Creds(creds))
+
+	s := grpc.NewServer(opts...)
 
 	pb.RegisterCalculateServiceServer(s, &Server{})
 
